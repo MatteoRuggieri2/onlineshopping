@@ -7,7 +7,6 @@ import com.mr.onlineshopping.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,16 +18,20 @@ public class CartService implements CartFunctions {
 
     @Override
     public Optional<Cart> getCartById(int cartId) {
-        return Optional.empty();
+        return cartRepository.findById(cartId);
     }
 
     @Override
     public Optional<Cart> getCartFromUserId(int userId) {
-        return Optional.empty();
+        return cartRepository.findByUserId(userId);
     }
 
     @Override
-    public List<Article> getCartArticles(int cartId) {
+    public List<Article> getCartArticles(int cartId) throws Exception {
+        // Mi prendo il cart
+        Cart cart = this.getCartById(cartId).orElseThrow(() -> new Exception("Cart not found"));
+
+        // Mi prendo gli articoli dal cart
         return List.of();
     }
 
