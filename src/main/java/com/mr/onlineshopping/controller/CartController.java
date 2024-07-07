@@ -5,6 +5,7 @@ import com.mr.onlineshopping.dto.CartDTO;
 import com.mr.onlineshopping.entity.Article;
 import com.mr.onlineshopping.entity.Cart;
 import com.mr.onlineshopping.exceptions.CartNotFound;
+import com.mr.onlineshopping.exceptions.UserNotFound;
 import com.mr.onlineshopping.interfaces.CartFunctions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,11 +49,17 @@ public class CartController {
         return ResponseEntity.ok(cartArticlesDTO);
     }
 
-    // DELETE Cart articles
+    // CREATE Cart
+    @PostMapping("cart/create/{userId}")
+    public ResponseEntity<Boolean> createCart(@PathVariable("userId") int userId) throws UserNotFound {
+        cartService.createCart(userId);
+        return ResponseEntity.ok(true);
+    }
+
+    // DELETE Cart
     @DeleteMapping("cart/{cartId}/delete")
     public ResponseEntity<Boolean> deleteCartById(@PathVariable("cartId") int cartId) throws CartNotFound {
         cartService.deleteCart(cartId);
-
         return ResponseEntity.ok(true);
     }
 }

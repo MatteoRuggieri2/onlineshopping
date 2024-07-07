@@ -38,7 +38,7 @@ public class User implements Serializable {
     Indica che l'attributo user della classe Profile è quello che possiede la chiave esterna.
     In altre parole, dice a JPA che il campo user nell'entità Profile è responsabile
     della gestione della relazione. */
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "user")
     @JsonIgnore
     private Cart cart;
 

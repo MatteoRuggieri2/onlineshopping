@@ -31,7 +31,7 @@ public class Cart implements Serializable {
 
 
     // Con questo stabilisci una relazione 1 to 1
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne()
     @JoinColumn(name = "user_id", referencedColumnName = "id") // Con questo dici che la colonna user_id si riferisce alla colonna id della tabella users (entity User)
     private User user; // Qui verrà salvato l'intero user
 
