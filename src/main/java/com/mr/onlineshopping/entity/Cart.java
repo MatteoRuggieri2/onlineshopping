@@ -37,7 +37,7 @@ public class Cart implements Serializable {
 
 
     // Con questo indico una relazione MANY TO MANY con Article
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
             name = "cart_article", // Nome tabella ponte
             joinColumns = @JoinColumn(name="cart_id"), // Prende i Cart che hanno come ID la FK "cart_id"

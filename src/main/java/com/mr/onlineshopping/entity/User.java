@@ -1,5 +1,6 @@
 package com.mr.onlineshopping.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,6 +39,7 @@ public class User implements Serializable {
     In altre parole, dice a JPA che il campo user nell'entità Profile è responsabile
     della gestione della relazione. */
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     private Cart cart;
 
     /* L'attributo "mappedBy" specifica il lato inverso della relazione. Indica che
@@ -46,6 +48,6 @@ public class User implements Serializable {
      * responsabile della gestione della relazione.
      * */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-// @JsonIgnore // Aggiungilo per evitare il JSON infinito
+    @JsonIgnore // Aggiungilo per evitare il JSON infinito
     private List<Order> orders;
 }

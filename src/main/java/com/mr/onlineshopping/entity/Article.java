@@ -1,5 +1,6 @@
 package com.mr.onlineshopping.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,9 +42,11 @@ public class Article implements Serializable {
 
     // Con questo indico una relazione inversa mappata in base all'attributo "articles" nel Cart.
     @ManyToMany(mappedBy = "articles")
+    @JsonIgnore // Se usi i DTO e NON inserisci la variabile carts, puoi anche togliere questa annotazione
     private Set<Cart> carts;
 
     // Con questo indico una relazione inversa mappata in base all'attributo "articles" nel Order.
     @ManyToMany(mappedBy = "articles")
+    @JsonIgnore
     private Set<Cart> orders;
 }
