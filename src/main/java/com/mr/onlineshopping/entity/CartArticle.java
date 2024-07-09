@@ -16,6 +16,6 @@ public class CartArticle {
     @EmbeddedId
     private CartArticleID cartArticleID;
 
-    @Column(name = "qta")
+    @Column(name = "article_qta")
     private int qta;
 }

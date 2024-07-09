@@ -1,6 +1,6 @@
 package com.mr.onlineshopping.controller;
 
-import com.mr.onlineshopping.exceptions.CartNotFound;
+import com.mr.onlineshopping.exceptions.*;
 import com.mr.onlineshopping.response.ExceptionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +30,42 @@ public class GlobalCustomExceptions extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(CartNotFound.class)
-    public final ResponseEntity<Object> quantityNotAvailableExceptions(CartNotFound ex, WebRequest request) {
+    public final ResponseEntity<Object> cartNotFound(CartNotFound ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFound.class)
+    public final ResponseEntity<Object> userNotFound(UserNotFound ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ArticleNotFound.class)
+    public final ResponseEntity<Object> articleNotFound(ArticleNotFound ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ArticleNotFoundInTheCart.class)
+    public final ResponseEntity<Object> articleNotFoundInTheCart(ArticleNotFoundInTheCart ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ArticleNotAvailable.class)
+    public final ResponseEntity<Object> articleNotAvailable(ArticleNotAvailable ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ToFewItemInTheCart.class)
+    public final ResponseEntity<Object> toFewItemInTheCart(ToFewItemInTheCart ex, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
                 request.getDescription(false), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);

@@ -29,7 +29,7 @@ public class UserService implements UserFunctions {
 
     @Override
     public boolean ifUserExist(int userId) {
-        return false;
+        return userRepository.findById(userId).isPresent();
     }
 
 }
