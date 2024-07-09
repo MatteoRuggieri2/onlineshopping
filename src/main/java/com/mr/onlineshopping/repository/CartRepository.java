@@ -19,5 +19,5 @@ public interface CartRepository extends JpaRepository<Cart, Integer> {
     @Transactional
     @Query(value = "UPDATE carts SET total_price = :totalPrice WHERE id = :cartId", nativeQuery = true)
     void updateCartTotalPrice(@Param("cartId") int cartId,
-                                 @Param("totalPrice") BigDecimal totalPrice);
+                              @Param("totalPrice") BigDecimal totalPrice);
 }
