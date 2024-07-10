@@ -63,7 +63,7 @@ public class CartService implements CartFunctions {
     * TRUE se l'articolo viene aggiunto correttamente al Cart */
     @Transactional
     @Override
-    public boolean addArticleToUserCart(int userId, int articleId, int articleQta) throws UserNotFound, ArticleNotFound, ArticleNotAvailable, CartNotFound {
+    public boolean addArticleToUserCart(int userId, int articleId, int articleQta) throws UserNotFound, ArticleNotFound, ArticleNotAvailable, CartNotFound, CartAlreadyExists {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
         if (!articleRepository.existsById(articleId)) {throw new ArticleNotFound(articleId); }
         if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
@@ -84,14 +84,24 @@ public class CartService implements CartFunctions {
         if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
         Cart userCart = cartRepository.findByUserId(userId).orElseThrow(() -> new CartNotFound("The user's cart was not found"));
 
-        // Prendo la riga con l'id unificato
+        // Controllo che l'articolo sia dentro il carrello - Prendo la riga con l'id unificato
         CartArticle cartArticle = cartArticleRepository.findById(new CartArticleID(userCart.getId(), articleId))
                 .orElseThrow(() -> new ArticleNotFoundInTheCart(articleId, userCart.getId()));
 
-        // Modifico la qta dell'articolo nel carrello
-        cartArticleRepository.updateCartArticleQtaToCart(userCart.getId(), articleId, articleQta);
+//        // metodo 1: Modifico la qta dell'articolo nel carrello
+        //TODO ERROR -> Non aggiorna in tempo la qta
+//        cartArticleRepository.updateCartArticleQtaToCart(userCart.getId(), articleId, articleQta);
+//        cartArticleRepository.flush();
 
-        // TODO -> Modifico il totale del cart
+        // metodo 2: Risalvo tutto il cartArticle
+        //TODO -> Salvando tutta la riga la salva in tempo
+        cartArticle.setQta(articleQta);
+        cartArticleRepository.save(cartArticle);
+
+
+
+        //TODO |Error  -  Quando arrivo qua la qta non è stata aggiornata se faccio UPDATE
+        this.updateCartTotalPrice(userCart.getId());
         return true;
     }
 
@@ -123,13 +133,14 @@ public class CartService implements CartFunctions {
     * Return FALSE se non lo crea (magari già esiste) */
     @Transactional
     @Override
-    public boolean createCart(int userId) throws UserNotFound {
+    public boolean createCart(int userId) throws UserNotFound, CartAlreadyExists {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
         Optional<Cart> userCart = this.getCartFromUserId(userId);
-        if (userCart.isPresent()) { return false; }
+        if (userCart.isPresent()) {
+            throw new CartAlreadyExists("The user's cart (userId: " + userId + ") already exists.");
+        }
         Cart cart = new Cart();
         cart.setUser(user);
-        cart.setTotalPrice(BigDecimal.valueOf(0)); // Dovrebbe essere di default 0.00, ma mi obbliga a settarlo
         cartRepository.save(cart);
         return true;
     }
@@ -158,12 +169,11 @@ public class CartService implements CartFunctions {
                 .map(cartArticle -> sumSameCartArticle(cartArticle)) // [100, 200, 300]
                 .reduce(BigDecimal.valueOf(0), (a, b) -> a.add(b)); // 100 + 200 + 300 = 600
 
-        // VARIANTE
-//        totalPrice = cartArticles.stream()
-//                .map(this::sumSameCartArticle)
-//                .reduce(BigDecimal.valueOf(0), BigDecimal::add);
-
-
+/*      // VARIANTE
+        totalPrice = cartArticles.stream()
+                .map(this::sumSameCartArticle)
+                .reduce(BigDecimal.valueOf(0), BigDecimal::add);
+*/
         return totalPrice;
     }
 
@@ -180,7 +190,7 @@ public class CartService implements CartFunctions {
         newCartArticle.setQta(articleQta);
         cartArticleRepository.save(newCartArticle);
 
-        // TODO -> Modifico il totale del cart
+        // Modifico il totale del cart
         this.updateCartTotalPrice(cartId);
         return true;
     }
@@ -188,7 +198,7 @@ public class CartService implements CartFunctions {
     /* Questo metodo ritorna il carrello dell'utente.
     Se il carrello dell'utente non esiste lo crea */
     @Transactional
-    public Cart getUserCart(int userId) throws UserNotFound {
+    public Cart getUserCart(int userId) throws UserNotFound, CartAlreadyExists {
         User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
         Optional<Cart> userCart = Optional.ofNullable(user.getCart());
         if (userCart.isEmpty()) {

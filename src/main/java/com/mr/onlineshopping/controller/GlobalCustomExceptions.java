@@ -36,6 +36,13 @@ public class GlobalCustomExceptions extends ResponseEntityExceptionHandler {
         return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(CartAlreadyExists.class)
+    public final ResponseEntity<Object> cartAlreadyExists(CartAlreadyExists ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(UserNotFound.class)
     public final ResponseEntity<Object> userNotFound(UserNotFound ex, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),

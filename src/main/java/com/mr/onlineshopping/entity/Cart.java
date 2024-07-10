@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,11 +24,9 @@ public class Cart implements Serializable {
     @Column(name = "id")  // Se il nome della colonna è uguale a quello della variabile puoi anche scrivere solo @Column
     private int id;
 
-//    @Column(name = "user_id")
-//    private int userId;
 
     @Column(name = "total_price", precision = 9, scale = 2) // DECIMAL(9, 2)
-    private BigDecimal totalPrice;
+    private BigDecimal totalPrice = BigDecimal.ZERO;
 
 
     // Con questo stabilisci una relazione 1 to 1
@@ -43,5 +42,5 @@ public class Cart implements Serializable {
             joinColumns = @JoinColumn(name="cart_id"), // Prende i Cart che hanno come ID la FK "cart_id"
             inverseJoinColumns = @JoinColumn(name="article_id") // Prende gli Article che hanno come ID la FK "article_id"
     )
-    private Set<Article> articles = new HashSet<>();
+    private Set<Article> articles;
 }

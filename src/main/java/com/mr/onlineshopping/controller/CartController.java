@@ -68,25 +68,24 @@ public class CartController {
     @PostMapping("users/{userId}/cart/insert/{articleId}/{articleQta}")
     public ResponseEntity<Boolean> addArticleToCart(@PathVariable("userId") int userId,
                                                     @PathVariable("articleId") int articleId,
-                                                    @PathVariable("articleQta") int articleQta) throws ArticleNotFound, ArticleNotAvailable, UserNotFound, CartNotFound {
+                                                    @PathVariable("articleQta") int articleQta) throws ArticleNotFound, ArticleNotAvailable, UserNotFound, CartNotFound, CartAlreadyExists {
         cartService.addArticleToUserCart(userId, articleId, articleQta);
         return ResponseEntity.ok(true);
     }
 
-//    // ADD Article to Cart
-//    @PostMapping("carts/{cartId}/alter/{articleId}/{articleQta}")
-//    public ResponseEntity<Boolean> removeArticleToCart(@PathVariable("cartId") int cartId,
-//                                                       @PathVariable("articleId") int articleId,
-//                                                       @PathVariable("articleQta") int articleQta) throws CartNotFound, ArticleNotFound, ToFewItemInTheCart, ArticleNotAvailable {
-//        cartService.editArticleQtaToCart(cartId, articleId, articleQta);
-//        return ResponseEntity.ok(true);
-//    }
+    // ADD Article to Cart
+    @PatchMapping("carts/{userId}/alter/{articleId}/{articleQta}")
+    public ResponseEntity<Boolean> editArticleQtaToCart(@PathVariable("userId") int userId,
+                                                        @PathVariable("articleId") int articleId,
+                                                        @PathVariable("articleQta") int articleQta) throws CartNotFound, ArticleNotFound, ToFewItemInTheCart, ArticleNotAvailable, UserNotFound, ArticleNotFoundInTheCart {
+        cartService.editArticleQtaToCart(userId, articleId, articleQta);
+        return ResponseEntity.ok(true);
+    }
 
     // CREATE Cart
     @PostMapping("carts/create/{userId}")
-    public ResponseEntity<Boolean> createCart(@PathVariable("userId") int userId) throws UserNotFound {
-        cartService.createCart(userId);
-        return ResponseEntity.ok(true);
+    public ResponseEntity<Boolean> createCart(@PathVariable("userId") int userId) throws UserNotFound, CartAlreadyExists {
+        return ResponseEntity.ok(cartService.createCart(userId));
     }
 
     // DELETE Cart
