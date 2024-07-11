@@ -6,6 +6,8 @@ import com.mr.onlineshopping.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService implements UserFunctions {
 
@@ -13,23 +15,23 @@ public class UserService implements UserFunctions {
     UserRepository userRepository;
 
     @Override
-    public User getUserById(int userId) {
-        return null;
+    public Optional<User> getUserById(int userId) {
+        return userRepository.findById(userId);
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        return null;
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
     public boolean login(String email, String password) {
-        return false;
+        return userRepository.findByEmailAndPassword(email, password).isPresent();
     }
 
     @Override
-    public boolean ifUserExist(int userId) {
-        return userRepository.findById(userId).isPresent();
+    public boolean ifUserExists(int userId) {
+        return userRepository.existsById(userId);
     }
 
 }

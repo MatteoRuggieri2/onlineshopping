@@ -2,11 +2,15 @@ package com.mr.onlineshopping.services;
 
 import com.mr.onlineshopping.entity.*;
 import com.mr.onlineshopping.exceptions.*;
+import com.mr.onlineshopping.interfaces.ArticleFunctions;
+import com.mr.onlineshopping.interfaces.CartArticleFunctions;
 import com.mr.onlineshopping.interfaces.CartFunctions;
+import com.mr.onlineshopping.interfaces.UserFunctions;
 import com.mr.onlineshopping.repository.ArticleRepository;
 import com.mr.onlineshopping.repository.CartArticleRepository;
 import com.mr.onlineshopping.repository.CartRepository;
 import com.mr.onlineshopping.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class CartService implements CartFunctions {
@@ -23,16 +26,18 @@ public class CartService implements CartFunctions {
     CartRepository cartRepository;
 
     @Autowired
-    CartArticleRepository cartArticleRepository;
+    CartArticleFunctions cartArticleService;
 
     @Autowired
-    UserRepository userRepository;
+    UserFunctions userService;
 
     @Autowired
-    ArticleRepository articleRepository;
+    ArticleFunctions articleService;
 
-    @Autowired
-    ArticleService articleService;
+    @Override
+    public boolean ifCartExist(int cartId) {
+        return cartRepository.existsById(cartId);
+    }
 
     @Override
     public Optional<Cart> getCartById(int cartId) {
@@ -45,11 +50,12 @@ public class CartService implements CartFunctions {
         return cartRepository.findByUserId(userId);
     }
 
+    /* Questo metodo restituisce gli articoli di un carrello */
     @Override
-    public Set<Article> getCartArticles(int cartId) throws CartNotFound {
-        // Mi prendo il cart, se non c'è lancio exception custom
+    public List<CartArticle> getCartArticles(int cartId) throws CartNotFound {
         Cart cart = this.getCartById(cartId).orElseThrow(() -> new CartNotFound(cartId));
-        return cart.getArticles();
+//        return cart.getArticles();
+        return List.of();
     }
 
     /* Questo metodo aggiunge 1 articolo per volta nella qta richiesta
@@ -64,11 +70,11 @@ public class CartService implements CartFunctions {
     @Transactional
     @Override
     public boolean addArticleToUserCart(int userId, int articleId, int articleQta) throws UserNotFound, ArticleNotFound, ArticleNotAvailable, CartNotFound, CartAlreadyExists {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
-        if (!articleRepository.existsById(articleId)) {throw new ArticleNotFound(articleId); }
-        if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
-        Cart cart = this.getUserCart(userId);
-        this.addArticleToCart(cart.getId(), articleId, articleQta);
+//        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
+//        if (!articleRepository.existsById(articleId)) {throw new ArticleNotFound(articleId); }
+//        if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
+//        Cart cart = this.getUserCart(userId);
+//        this.addArticleToCart(cart.getId(), articleId, articleQta);
         return true;
     }
 
@@ -79,29 +85,40 @@ public class CartService implements CartFunctions {
     @Transactional
     @Override
     public boolean editArticleQtaToCart(int userId, int articleId, int articleQta) throws ArticleNotFound, ArticleNotFoundInTheCart, CartNotFound, ToFewItemInTheCart, UserNotFound, ArticleNotAvailable {
-        if (!userRepository.existsById(userId)) { throw new UserNotFound(userId); }
-        if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
-        if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
-        Cart userCart = cartRepository.findByUserId(userId).orElseThrow(() -> new CartNotFound("The user's cart was not found"));
-
-        // Controllo che l'articolo sia dentro il carrello - Prendo la riga con l'id unificato
-        CartArticle cartArticle = cartArticleRepository.findById(new CartArticleID(userCart.getId(), articleId))
-                .orElseThrow(() -> new ArticleNotFoundInTheCart(articleId, userCart.getId()));
-
-//        // metodo 1: Modifico la qta dell'articolo nel carrello
-        //TODO ERROR -> Non aggiorna in tempo la qta
-//        cartArticleRepository.updateCartArticleQtaToCart(userCart.getId(), articleId, articleQta);
-//        cartArticleRepository.flush();
-
-        // metodo 2: Risalvo tutto il cartArticle
-        //TODO -> Salvando tutta la riga la salva in tempo
-        cartArticle.setQta(articleQta);
-        cartArticleRepository.save(cartArticle);
-
-
-
-        //TODO |Error  -  Quando arrivo qua la qta non è stata aggiornata se faccio UPDATE
-        this.updateCartTotalPrice(userCart.getId());
+//        if (!userRepository.existsById(userId)) { throw new UserNotFound(userId); }
+//        if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
+//        if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
+//        Cart userCart = cartRepository.findByUserId(userId).orElseThrow(() -> new CartNotFound("The user's cart was not found"));
+//
+//        // Controllo che l'articolo sia dentro il carrello - Prendo la riga con l'id unificato
+//        CartArticle cartArticle = cartArticleRepository.findById(new CartArticleID(userCart.getId(), articleId))
+//                .orElseThrow(() -> new ArticleNotFoundInTheCart(articleId, userCart.getId()));
+//
+//        // Se la qta è ZERO elimino quell'articolo e calcolo il prezzo totale del carrello.
+//        if (articleQta == 0) {
+//            this.deleteArticleToCart(userCart.getId(), articleId);
+//            this.updateCartTotalPrice(userCart.getId());
+//            return true;
+//        }
+//
+////        // metodo 1: Modifico la qta dell'articolo nel carrello
+//        /* TODO ERROR -> Non aggiorna in tempo la qta perchè il commit della transaction non viene eseguito immediatamente,
+//            ma viene eseguito quando la transazione è terminata. Per questo il passaggio successivo si trova ancora
+//            il valore non aggiornato, perchè viene aggiornato alla fine. */
+////        cartArticleRepository.updateCartArticleQtaToCart(userCart.getId(), articleId, articleQta);
+////        cartArticleRepository.flush();
+//        // dovrei effettuare a mano un commit qui
+//
+//
+//        // metodo 2: Risalvo tutto il cartArticle
+//        //TODO -> Salvando tutta la riga la salva in tempo (il save() comprende il commit immediato)
+//        cartArticle.setQta(articleQta);
+//        cartArticleRepository.save(cartArticle);
+//
+//
+//
+//        //TODO |Error  -  Quando arrivo qua la qta non è stata aggiornata se faccio UPDATE
+//        this.updateCartTotalPrice(userCart.getId());
         return true;
     }
 
@@ -117,13 +134,35 @@ public class CartService implements CartFunctions {
     * Exceptions:
     * ArticleNotFound
     * CartNotFound */
+    @Transactional
     @Override
     public boolean deleteArticleToCart(int cartId, int articleId) throws ArticleNotFound, CartNotFound {
-        if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
-        if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
-        CartArticleID unifiedId = new CartArticleID(cartId, articleId);
-        cartArticleRepository.deleteById(unifiedId);
+//        if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
+//        if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
+//        CartArticleID unifiedId = new CartArticleID(cartId, articleId);
+//        cartArticleRepository.deleteById(unifiedId);
         return true;
+    }
+
+    @Override
+    public boolean updateCart(Cart cart) throws CartNotFound, UserNotFound, ArticleNotFound {
+//        // Controllo che esista il cart
+//        if (!cartRepository.existsById(cart.getId())) { throw new CartNotFound(cart.getId()); }
+//        // Controllo che esista l'user associato al carrello
+//        if (!userRepository.existsById(cart.getUser().getId())) { throw new UserNotFound(cart.getUser().getId()); }
+//        // Controllo che esistano tutti gli articoli e che la qta richiesta sia disponibile
+//        List<Article> articles = cart.getArticles();
+//        for (int i = 0; i < articles.size(); i++) {
+//            Article article = articles.get(i);
+//            int articleId = article.getId();
+//            int articleQta = article.get
+//            if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
+//            if (!articleService.checkAvailability(articleId, )) { throw new ArticleNotFound(articleId); }
+//        }
+//
+//
+//        // Aggiorno il carrello
+        return false;
     }
 
     /* Questo metodo accetta come argomento l'id dell'utente.
@@ -134,14 +173,14 @@ public class CartService implements CartFunctions {
     @Transactional
     @Override
     public boolean createCart(int userId) throws UserNotFound, CartAlreadyExists {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
-        Optional<Cart> userCart = this.getCartFromUserId(userId);
-        if (userCart.isPresent()) {
-            throw new CartAlreadyExists("The user's cart (userId: " + userId + ") already exists.");
-        }
-        Cart cart = new Cart();
-        cart.setUser(user);
-        cartRepository.save(cart);
+//        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
+//        Optional<Cart> userCart = this.getCartFromUserId(userId);
+//        if (userCart.isPresent()) {
+//            throw new CartAlreadyExists("The user's cart (userId: " + userId + ") already exists.");
+//        }
+//        Cart cart = new Cart();
+//        cart.setUser(user);
+//        cartRepository.save(cart);
         return true;
     }
 
@@ -163,11 +202,11 @@ public class CartService implements CartFunctions {
     public BigDecimal calculateCartTotalPrice(int cartId) throws CartNotFound {
         if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
         BigDecimal totalPrice = BigDecimal.ZERO;
-        List<CartArticle> cartArticles = cartArticleRepository.findByCartId(cartId);
+//        List<CartArticle> cartArticles = cartArticleRepository.findByCartId(cartId);
 
-        totalPrice = cartArticles.stream()
-                .map(cartArticle -> sumSameCartArticle(cartArticle)) // [100, 200, 300]
-                .reduce(BigDecimal.valueOf(0), (a, b) -> a.add(b)); // 100 + 200 + 300 = 600
+//        totalPrice = cartArticles.stream()
+//                .map(cartArticle -> sumSameCartArticle(cartArticle)) // [100, 200, 300]
+//                .reduce(BigDecimal.valueOf(0), (a, b) -> a.add(b)); // 100 + 200 + 300 = 600
 
 /*      // VARIANTE
         totalPrice = cartArticles.stream()
@@ -182,13 +221,13 @@ public class CartService implements CartFunctions {
     * Exceptions: ArticleNotFound, ArticleNotAvailable, CartNotFound
     * Returnments: boolean */
     public boolean addArticleToCart(int cartId, int articleId, int articleQta) throws ArticleNotFound, ArticleNotAvailable, CartNotFound {
-        if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
-        if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
-        if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
-        CartArticle newCartArticle = new CartArticle();
-        newCartArticle.setCartArticleID(new CartArticleID(cartId, articleId));
-        newCartArticle.setQta(articleQta);
-        cartArticleRepository.save(newCartArticle);
+//        if (!articleRepository.existsById(articleId)) { throw new ArticleNotFound(articleId); }
+//        if (!articleService.checkAvailability(articleId, articleQta)) { throw new ArticleNotAvailable(articleId, articleQta); }
+//        if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
+//        CartArticle newCartArticle = new CartArticle();
+//        newCartArticle.setCartArticleID(new CartArticleID(cartId, articleId));
+//        newCartArticle.setQta(articleQta);
+//        cartArticleRepository.save(newCartArticle);
 
         // Modifico il totale del cart
         this.updateCartTotalPrice(cartId);
@@ -199,22 +238,24 @@ public class CartService implements CartFunctions {
     Se il carrello dell'utente non esiste lo crea */
     @Transactional
     public Cart getUserCart(int userId) throws UserNotFound, CartAlreadyExists {
-        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
-        Optional<Cart> userCart = Optional.ofNullable(user.getCart());
-        if (userCart.isEmpty()) {
-            this.createCart(userId);
-            userCart = cartRepository.findByUserId(userId);
-        }
-        return userCart.get();
+//        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFound(userId));
+//        Optional<Cart> userCart = Optional.ofNullable(user.getCart());
+//        if (userCart.isEmpty()) {
+//            this.createCart(userId);
+//            userCart = cartRepository.findByUserId(userId);
+//        }
+//        return userCart.get();
+        return null;
     }
 
     /* Questo metodo calcola il prezzo totale di un articolo nel carrello,
     moltiplicando la qta per il prezzo unitario. */
     public BigDecimal sumSameCartArticle(CartArticle cartArticle) {
-        int articleId = cartArticle.getCartArticleID().getArticleId();
-        Article article = articleRepository.findById(articleId).get();
-        BigDecimal articleUnitPrice = article.getPrice();
-        BigDecimal articleQta = BigDecimal.valueOf(cartArticle.getQta());
-        return articleUnitPrice.multiply(articleQta);
+//        int articleId = cartArticle.getCartArticleID().getArticleId();
+//        Article article = articleRepository.findById(articleId).get();
+//        BigDecimal articleUnitPrice = article.getPrice();
+//        BigDecimal articleQta = BigDecimal.valueOf(cartArticle.getQta());
+//        return articleUnitPrice.multiply(articleQta);
+        return BigDecimal.ZERO;
     }
 }

@@ -18,4 +18,17 @@ public class CartArticle {
 
     @Column(name = "article_qta")
     private int qta;
+
+    //TODO: Per la relazione one to many con la tabella ponte
+    @ManyToOne
+    @MapsId("cartId")
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
+
+    //TODO: Per la relazione one to many con la tabella ponte
+    @ManyToOne
+    @MapsId("articleId")
+    @JoinColumn(name = "article_id", nullable = false)
+    private Article article;
+
 }

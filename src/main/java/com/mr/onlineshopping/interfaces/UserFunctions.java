@@ -2,9 +2,11 @@ package com.mr.onlineshopping.interfaces;
 
 import com.mr.onlineshopping.entity.User;
 
+import java.util.Optional;
+
 public interface UserFunctions {
-    User getUserById(int userId);
-    User getUserByEmail(String email);
+    Optional<User> getUserById(int userId);
+    Optional<User> getUserByEmail(String email);
     boolean login(String email, String password);
-    boolean ifUserExist(int userId);
+    boolean ifUserExists(int userId);
 }

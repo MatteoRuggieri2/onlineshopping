@@ -6,9 +6,11 @@ import com.mr.onlineshopping.entity.Article;
 import com.mr.onlineshopping.entity.Cart;
 import com.mr.onlineshopping.exceptions.*;
 import com.mr.onlineshopping.interfaces.CartFunctions;
-import com.mr.onlineshopping.services.UserService;
+import com.mr.onlineshopping.interfaces.UserFunctions;
+import com.mr.onlineshopping.response.ApiResponse;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,42 +29,42 @@ public class CartController {
     private CartFunctions cartService;
 
     @Autowired
-    private UserService userService;
+    private UserFunctions userService;
 
+    // TODO - OK
     // GET Cart by cart_id
     @GetMapping("carts/{cartId}")
-    public ResponseEntity<CartDTO> getCartById(@PathVariable("cartId") int cartId) throws CartNotFound {
+    public ResponseEntity<ApiResponse<CartDTO>> getCartById(@PathVariable("cartId") int cartId) throws CartNotFound {
         Cart cart = cartService.getCartById(cartId)
                 .orElseThrow(() -> new CartNotFound(cartId));
 
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
-        return ResponseEntity.ok(cartDTO);
+        return ResponseEntity.ok(new ApiResponse<>(cartDTO, "Success", HttpStatus.OK.value()));
     }
 
-    // TODO -> Da inserire in UserController (a causa dell'URL)
     // GET Cart from user_id
-    @GetMapping("users/{userId}/cart")
-    public ResponseEntity<CartDTO> getCartFromUserId(@PathVariable("userId") int userId) throws UserNotFound, CartNotFound {
-        if (!userService.ifUserExist(userId)) { throw new UserNotFound(userId); }
-        Cart cart = cartService.getCartFromUserId(userId)
-                .orElseThrow(() -> new CartNotFound("The user does not have a cart"));
-
-        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
-        return ResponseEntity.ok(cartDTO);
-    }
+//    @GetMapping("carts/user/{userId}")
+//    public ResponseEntity<ApiResponse<CartDTO>> getCartFromUserId(@PathVariable("userId") int userId) throws UserNotFound, CartNotFound {
+//        if (!userService.ifUserExist(userId)) { throw new UserNotFound(userId); }
+//        Cart cart = cartService.getCartFromUserId(userId)
+//                .orElseThrow(() -> new CartNotFound("The user does not have a cart"));
+//
+//        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
+//        return ResponseEntity.ok(cartDTO);
+//    }
 
     // GET Cart articles
-    @GetMapping("carts/{cartId}/articles")
-    public ResponseEntity<Set<ArticleDTO>> getCartArticles(@PathVariable("cartId") int cartId) throws CartNotFound {
-        Set<Article> cartArticles = cartService.getCartArticles(cartId);
-
-        // Per ogni articolo del set lo devo mappare in ArticleDTO e salvarlo in un nuovo set
-        Set<ArticleDTO> cartArticlesDTO = cartArticles.stream()
-                .map(article -> modelMapper.map(article, ArticleDTO.class))
-                .collect(Collectors.toSet());
-
-        return ResponseEntity.ok(cartArticlesDTO);
-    }
+//    @GetMapping("carts/{cartId}/articles")
+//    public ResponseEntity<Set<ArticleDTO>> getCartArticles(@PathVariable("cartId") int cartId) throws CartNotFound {
+//        Set<Article> cartArticles = cartService.getCartArticles(cartId);
+//
+//        // Per ogni articolo del set lo devo mappare in ArticleDTO e salvarlo in un nuovo set
+//        Set<ArticleDTO> cartArticlesDTO = cartArticles.stream()
+//                .map(article -> modelMapper.map(article, ArticleDTO.class))
+//                .collect(Collectors.toSet());
+//
+//        return ResponseEntity.ok(cartArticlesDTO);
+//    }
 
     // ADD Article to Cart
     @PostMapping("users/{userId}/cart/insert/{articleId}/{articleQta}")

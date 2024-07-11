@@ -1,16 +1,13 @@
 package com.mr.onlineshopping.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -42,5 +39,9 @@ public class Cart implements Serializable {
             joinColumns = @JoinColumn(name="cart_id"), // Prende i Cart che hanno come ID la FK "cart_id"
             inverseJoinColumns = @JoinColumn(name="article_id") // Prende gli Article che hanno come ID la FK "article_id"
     )
-    private Set<Article> articles;
+    private List<Article> articles;
+
+    //TODO: Per la relazione one to meny con la tabella ponte
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CartArticle> cartArticles;
 }

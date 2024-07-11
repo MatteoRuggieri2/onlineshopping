@@ -1,14 +1,13 @@
 package com.mr.onlineshopping.dto;
 
 import com.mr.onlineshopping.entity.Article;
-import com.mr.onlineshopping.entity.User;
+import com.mr.onlineshopping.entity.CartArticle;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,6 +16,11 @@ public class CartDTO {
 
     private int id;
     private BigDecimal totalPrice;
-    private User user; // Qui verrà salvato l'intero user
-    private Set<Article> articles = new HashSet<>();
+    private UserDTO user; // Così verrà salvato l'intero user
+    //private int userId; // Qui verrà salvato il suo id
+//    private List<ArticleDTO> articles;
+
+//    TODO: Per la relazione one to many con la tabella ponte
+    private List<CartArticleDTO> cartArticles;
+
 }

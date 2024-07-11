@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -49,4 +50,8 @@ public class Article implements Serializable {
     @ManyToMany(mappedBy = "articles")
     @JsonIgnore
     private Set<Cart> orders;
+
+    //TODO: Per la relazione one to meny con la tabella ponte
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CartArticle> cartArticles;
 }

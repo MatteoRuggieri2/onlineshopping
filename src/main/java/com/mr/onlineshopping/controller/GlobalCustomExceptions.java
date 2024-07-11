@@ -77,4 +77,11 @@ public class GlobalCustomExceptions extends ResponseEntityExceptionHandler {
                 request.getDescription(false), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(LoginWrongEmailOrPassword.class)
+    public final ResponseEntity<Object> loginWrongEmailOrPassword(LoginWrongEmailOrPassword ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
 }
