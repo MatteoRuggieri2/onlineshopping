@@ -25,4 +25,8 @@ public interface CartArticleRepository extends JpaRepository<CartArticle, CartAr
     // Questo metodo seleziona tutti gli articoli di un carrello
     @Query(value = "SELECT * FROM cart_article WHERE cart_id = :cartId", nativeQuery = true)
     List<CartArticle> findByCartId(@Param("cartId") int cartId);
+
+//    boolean deleteCartArticleWhereCartId
+    @Transactional
+    int deleteByCartId(int cartId);
 }

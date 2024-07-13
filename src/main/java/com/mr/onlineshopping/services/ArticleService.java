@@ -1,6 +1,7 @@
 package com.mr.onlineshopping.services;
 
 import com.mr.onlineshopping.entity.Article;
+import com.mr.onlineshopping.exceptions.ArticleNotAvailable;
 import com.mr.onlineshopping.exceptions.ArticleNotFound;
 import com.mr.onlineshopping.interfaces.ArticleFunctions;
 import com.mr.onlineshopping.repository.ArticleRepository;
@@ -17,8 +18,13 @@ public class ArticleService implements ArticleFunctions {
     ArticleRepository articleRepository;
 
     @Override
+    public boolean existsById(int articleId) {
+        return articleRepository.existsById(articleId);
+    }
+
+    @Override
     public List<Article> getAllArticle() {
-        return List.of();
+        return articleRepository.findAll();
     }
 
     @Override
@@ -35,12 +41,25 @@ public class ArticleService implements ArticleFunctions {
     }
 
     @Override
-    public boolean addArticleQta(int articleId, int qta) {
-        return false;
+    public boolean addArticleQta(int articleId, int qta) throws ArticleNotFound {
+
+        /* Controllo se esiste l'articolo, poi prendo la qta dell'articolo nel magazzino
+        e aggiungo a qtaAvailable + qta */
+        Article article = this.getArticleById(articleId).orElseThrow(() -> new ArticleNotFound(articleId));
+        article.setAvailableQta(article.getAvailableQta() + qta);
+        articleRepository.save(article);
+        return true;
     }
 
     @Override
-    public boolean removeArticleQta(int articleId, int qta) {
-        return false;
+    public boolean removeArticleQta(int articleId, int qta) throws ArticleNotFound, ArticleNotAvailable {
+
+        /* Controllo se esiste l'articolo, controllo che la qta richiesta sia inferiore
+        o uguale a qtaAvailable e poi rimuovo gli articoli (qtaAvailable - qta) */
+        Article article = this.getArticleById(articleId).orElseThrow(() -> new ArticleNotFound(articleId));
+        if (!this.checkAvailability(articleId, qta)) { throw new ArticleNotAvailable(articleId, qta); }
+        article.setAvailableQta(article.getAvailableQta() - qta);
+        articleRepository.save(article);
+        return true;
     }
 }

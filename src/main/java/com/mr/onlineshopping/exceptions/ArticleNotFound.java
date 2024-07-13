@@ -9,6 +9,6 @@ public class ArticleNotFound extends Exception {
     /* In questo modo quando lancio l'exception, con il super() richiama il costruttore
     della classe Exception, Exception(String message) */
     public ArticleNotFound(int articleId) {
-        super("ArticleNotFound: The article with id " + articleId + " was not found");
+        super("ArticleNotFound: The article (articleId: " + articleId + ") was not found");
     }
 }

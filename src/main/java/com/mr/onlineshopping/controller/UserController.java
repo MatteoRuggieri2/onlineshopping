@@ -64,7 +64,7 @@ public class UserController {
     public ResponseEntity<CartDTO> getCartFromUserId(@PathVariable("userId") int userId) throws UserNotFound, CartNotFound {
         if (!userService.ifUserExists(userId)) { throw new UserNotFound(userId); }
         Cart cart = cartService.getCartFromUserId(userId).orElseThrow(() -> new CartNotFound("The user does not have a cart"));
-        CartDTO cartDTO = ObjectMapperUtils.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
         return ResponseEntity.ok(cartDTO);
     }
 

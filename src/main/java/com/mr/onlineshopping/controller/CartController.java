@@ -1,9 +1,11 @@
 package com.mr.onlineshopping.controller;
 
 import com.mr.onlineshopping.dto.ArticleDTO;
+import com.mr.onlineshopping.dto.CartArticleDTO;
 import com.mr.onlineshopping.dto.CartDTO;
 import com.mr.onlineshopping.entity.Article;
 import com.mr.onlineshopping.entity.Cart;
+import com.mr.onlineshopping.entity.CartArticle;
 import com.mr.onlineshopping.exceptions.*;
 import com.mr.onlineshopping.interfaces.CartFunctions;
 import com.mr.onlineshopping.interfaces.UserFunctions;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,7 +34,6 @@ public class CartController {
     @Autowired
     private UserFunctions userService;
 
-    // TODO - OK
     // GET Cart by cart_id
     @GetMapping("carts/{cartId}")
     public ResponseEntity<ApiResponse<CartDTO>> getCartById(@PathVariable("cartId") int cartId) throws CartNotFound {
@@ -43,65 +45,73 @@ public class CartController {
     }
 
     // GET Cart from user_id
-//    @GetMapping("carts/user/{userId}")
-//    public ResponseEntity<ApiResponse<CartDTO>> getCartFromUserId(@PathVariable("userId") int userId) throws UserNotFound, CartNotFound {
-//        if (!userService.ifUserExist(userId)) { throw new UserNotFound(userId); }
-//        Cart cart = cartService.getCartFromUserId(userId)
-//                .orElseThrow(() -> new CartNotFound("The user does not have a cart"));
-//
-//        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
-//        return ResponseEntity.ok(cartDTO);
-//    }
+    @GetMapping("carts/user/{userId}")
+    public ResponseEntity<ApiResponse<CartDTO>> getCartFromUserId(@PathVariable("userId") int userId) throws UserNotFound, CartNotFound {
+        if (!userService.ifUserExists(userId)) { throw new UserNotFound(userId); }
+        Cart cart = cartService.getCartFromUserId(userId)
+                .orElseThrow(() -> new CartNotFound("The user does not have a cart"));
+
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
+        return ResponseEntity.ok(new ApiResponse<>(cartDTO, "Success", HttpStatus.OK.value()));
+    }
 
     // GET Cart articles
-//    @GetMapping("carts/{cartId}/articles")
-//    public ResponseEntity<Set<ArticleDTO>> getCartArticles(@PathVariable("cartId") int cartId) throws CartNotFound {
-//        Set<Article> cartArticles = cartService.getCartArticles(cartId);
-//
-//        // Per ogni articolo del set lo devo mappare in ArticleDTO e salvarlo in un nuovo set
-//        Set<ArticleDTO> cartArticlesDTO = cartArticles.stream()
-//                .map(article -> modelMapper.map(article, ArticleDTO.class))
-//                .collect(Collectors.toSet());
-//
-//        return ResponseEntity.ok(cartArticlesDTO);
-//    }
+    @GetMapping("carts/{cartId}/articles")
+    public ResponseEntity<ApiResponse<List<CartArticleDTO>>> getCartArticles(@PathVariable("cartId") int cartId) throws CartNotFound {
+        List<CartArticle> cartArticles = cartService.getCartArticles(cartId);
 
-    // ADD Article to Cart
-    @PostMapping("users/{userId}/cart/insert/{articleId}/{articleQta}")
-    public ResponseEntity<Boolean> addArticleToCart(@PathVariable("userId") int userId,
-                                                    @PathVariable("articleId") int articleId,
-                                                    @PathVariable("articleQta") int articleQta) throws ArticleNotFound, ArticleNotAvailable, UserNotFound, CartNotFound, CartAlreadyExists {
-        cartService.addArticleToUserCart(userId, articleId, articleQta);
-        return ResponseEntity.ok(true);
+        // Per ogni articolo del set lo devo mappare in ArticleDTO e salvarlo in un nuovo set
+        List<CartArticleDTO> cartArticlesDTO = cartArticles.stream()
+                .map(article -> modelMapper.map(article, CartArticleDTO.class))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ApiResponse<>(cartArticlesDTO, "Success", HttpStatus.OK.value()));
+
     }
 
     // ADD Article to Cart
-    @PatchMapping("carts/{userId}/alter/{articleId}/{articleQta}")
-    public ResponseEntity<Boolean> editArticleQtaToCart(@PathVariable("userId") int userId,
+    @PostMapping("carts/user/{userId}/{articleId}/{articleQta}")
+    public ResponseEntity<ApiResponse<Boolean>> addArticleToCart(@PathVariable("userId") int userId,
+                                                    @PathVariable("articleId") int articleId,
+                                                    @PathVariable("articleQta") int articleQta) throws ArticleNotFound, ArticleNotAvailable, UserNotFound, CartNotFound, CartAlreadyExists, InvalidSelectedArticleQta {
+        cartService.addArticleToUserCart(userId, articleId, articleQta);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Success", HttpStatus.OK.value()));
+    }
+
+    // EDIT Article to Cart
+    @PatchMapping("carts/user/{userId}/{articleId}/{articleQta}")
+    public ResponseEntity<ApiResponse<Boolean>> editArticleQtaToCart(@PathVariable("userId") int userId,
                                                         @PathVariable("articleId") int articleId,
-                                                        @PathVariable("articleQta") int articleQta) throws CartNotFound, ArticleNotFound, ToFewItemInTheCart, ArticleNotAvailable, UserNotFound, ArticleNotFoundInTheCart {
+                                                        @PathVariable("articleQta") int articleQta) throws CartNotFound, ArticleNotFound, ArticleNotAvailable, UserNotFound, ArticleNotFoundInTheCart {
         cartService.editArticleQtaToCart(userId, articleId, articleQta);
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Success", HttpStatus.OK.value()));
+
+    }
+
+    // DELETE Article to Cart
+    @DeleteMapping("carts/{cartId}/{articleId}")
+    public ResponseEntity<ApiResponse<Boolean>> deleteArticleQtaToCart(@PathVariable("cartId") int cartId,
+                                                                       @PathVariable("articleId") int articleId) throws CartNotFound, ArticleNotFound {
+        cartService.deleteArticleToCart(cartId, articleId);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Success", HttpStatus.OK.value()));
+
     }
 
     // CREATE Cart
-    @PostMapping("carts/create/{userId}")
-    public ResponseEntity<Boolean> createCart(@PathVariable("userId") int userId) throws UserNotFound, CartAlreadyExists {
-        return ResponseEntity.ok(cartService.createCart(userId));
+    @PostMapping("carts/{userId}")
+    public ResponseEntity<ApiResponse<CartDTO>> createCart(@PathVariable("userId") int userId) throws UserNotFound, CartAlreadyExists {
+        Cart cart = cartService.createCart(userId);
+        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class); // Setto tutti gli attributi del DTO con il mapper
+        return ResponseEntity.ok(new ApiResponse<>(cartDTO, "Success", HttpStatus.OK.value()));
     }
 
     // DELETE Cart
-    @DeleteMapping("carts/{cartId}/delete")
-    public ResponseEntity<Boolean> deleteCartById(@PathVariable("cartId") int cartId) throws CartNotFound {
-        cartService.deleteCart(cartId);
-        return ResponseEntity.ok(true);
+    @DeleteMapping("carts/{cartId}")
+    public ResponseEntity<ApiResponse<Boolean>> deleteCartById(@PathVariable("cartId") int cartId) throws CartNotFound {
+        boolean deleteStatus = cartService.deleteCart(cartId);
+        return deleteStatus
+                ? ResponseEntity.ok(new ApiResponse<>(true, "Success", HttpStatus.OK.value()))
+                : new ResponseEntity<>(new ApiResponse<>(false, "Fail", HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
     }
 
-    // TODO - test
-//    @GetMapping("carts/{cartId}/totalprice")
-//    public ResponseEntity<Boolean> totalPrice(@PathVariable("cartId") int cartId) throws CartNotFound {
-//        cartService.calculateCartTotalPrice(cartId);
-//
-//        return ResponseEntity.ok(true);
-//    }
 }

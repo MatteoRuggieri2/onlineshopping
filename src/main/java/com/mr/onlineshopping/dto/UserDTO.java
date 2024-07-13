@@ -17,5 +17,5 @@ public class UserDTO {
     private String name;
     private String surname;
     private String email;
-//    private String password; // Meglio non mostrarla la password nel JSON :)
+//    private String password; // Meglio non mostrarla la password nel Frontend :)
 }

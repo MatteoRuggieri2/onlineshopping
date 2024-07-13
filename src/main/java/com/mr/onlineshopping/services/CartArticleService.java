@@ -4,6 +4,7 @@ import com.mr.onlineshopping.entity.Cart;
 import com.mr.onlineshopping.entity.CartArticle;
 import com.mr.onlineshopping.entity.CartArticleID;
 import com.mr.onlineshopping.exceptions.ArticleNotFoundInTheCart;
+import com.mr.onlineshopping.exceptions.CartAlreadyExists;
 import com.mr.onlineshopping.exceptions.CartNotFound;
 import com.mr.onlineshopping.exceptions.UserNotFound;
 import com.mr.onlineshopping.interfaces.CartArticleFunctions;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CartArticleService implements CartArticleFunctions {
@@ -24,6 +26,22 @@ public class CartArticleService implements CartArticleFunctions {
 
     @Autowired
     UserService userService;
+
+    @Override
+    public boolean existById(CartArticleID cartArticleID) {
+        return cartArticleRepository.existsById(cartArticleID);
+    }
+
+    @Override
+    public boolean existByArticleIdAndUserId(int articleId, int userId) throws UserNotFound, CartAlreadyExists {
+        Cart userCart = cartService.getUserCart(userId);
+        return true;
+    }
+
+    @Override
+    public Optional<CartArticle> getCartArticleById(CartArticleID cartArticleID) {
+        return cartArticleRepository.findById(cartArticleID);
+    }
 
     // Questo metodo ritorna tutti gli articoli contenuti in un carrello esistente. (con cartId)
     @Override
@@ -47,5 +65,25 @@ public class CartArticleService implements CartArticleFunctions {
         CartArticle cartArticle = cartArticleRepository.findById(cartArticleID)
                 .orElseThrow(() -> new ArticleNotFoundInTheCart(cartArticleID.getArticleId(), cartArticleID.getCartId()));
         return cartArticle.getQta();
+    }
+
+    @Override
+    public boolean saveNewCartArticle(CartArticle cartArticle) {
+        cartArticleRepository.saveAndFlush(cartArticle);
+        return this.existById(cartArticle.getCartArticleID());
+    }
+
+    @Override
+    public boolean deleteCartArticle(CartArticleID cartArticleID) {
+        cartArticleRepository.deleteById(cartArticleID);
+        return this.existById(cartArticleID);
+
+    }
+
+    @Override
+    public int deleteAllCartArticles(int cartId) {
+        int deletedRow = cartArticleRepository.deleteByCartId(cartId);
+        cartArticleRepository.flush();
+        return deletedRow;
     }
 }
