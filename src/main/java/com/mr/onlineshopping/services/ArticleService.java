@@ -5,6 +5,7 @@ import com.mr.onlineshopping.exceptions.ArticleNotAvailable;
 import com.mr.onlineshopping.exceptions.ArticleNotFound;
 import com.mr.onlineshopping.interfaces.ArticleFunctions;
 import com.mr.onlineshopping.repository.ArticleRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +51,7 @@ public class ArticleService implements ArticleFunctions {
         articleRepository.save(article);
         return true;
     }
-
+    @Transactional
     @Override
     public boolean removeArticleQta(int articleId, int qta) throws ArticleNotFound, ArticleNotAvailable {
 
@@ -59,7 +60,7 @@ public class ArticleService implements ArticleFunctions {
         Article article = this.getArticleById(articleId).orElseThrow(() -> new ArticleNotFound(articleId));
         if (!this.checkAvailability(articleId, qta)) { throw new ArticleNotAvailable(articleId, qta); }
         article.setAvailableQta(article.getAvailableQta() - qta);
-        articleRepository.save(article);
+        articleRepository.saveAndFlush(article);
         return true;
     }
 }

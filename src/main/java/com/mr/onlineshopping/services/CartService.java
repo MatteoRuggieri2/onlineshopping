@@ -6,7 +6,9 @@ import com.mr.onlineshopping.interfaces.ArticleFunctions;
 import com.mr.onlineshopping.interfaces.CartArticleFunctions;
 import com.mr.onlineshopping.interfaces.CartFunctions;
 import com.mr.onlineshopping.interfaces.UserFunctions;
+import com.mr.onlineshopping.repository.CartArticleRepository;
 import com.mr.onlineshopping.repository.CartRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -185,22 +187,23 @@ public class CartService implements CartFunctions {
         return cartRepository.save(cart);
     }
 
-    @Transactional
+
     @Override
     public boolean clearCart(int cartId) throws CartNotFound {
-        Cart cart = cartRepository.findById(cartId).get();
         if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
         cartArticleService.deleteAllCartArticles(cartId);
         return true;
     }
 
-    @Transactional
+
     @Override
     public boolean deleteCart(int cartId) throws CartNotFound {
         if (!cartRepository.existsById(cartId)) { throw new CartNotFound(cartId); }
-        this.clearCart(cartId); // Svuoto il carrello
+         this.clearCart(cartId); // Svuoto il carrello
         cartRepository.deleteById(cartId);
-        return !cartRepository.existsById(cartId);
+//        return !cartRepository.existsById(cartId);
+        return true;
+
     }
 
     @Override

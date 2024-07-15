@@ -64,6 +64,13 @@ public class GlobalCustomExceptions extends ResponseEntityExceptionHandler {
         return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ArticleNotFoundInTheOrder.class)
+    public final ResponseEntity<Object> articleNotFoundInTheOrder(ArticleNotFoundInTheOrder ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(ArticleNotAvailable.class)
     public final ResponseEntity<Object> articleNotAvailable(ArticleNotAvailable ex, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
@@ -80,6 +87,20 @@ public class GlobalCustomExceptions extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(LoginWrongEmailOrPassword.class)
     public final ResponseEntity<Object> loginWrongEmailOrPassword(LoginWrongEmailOrPassword ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OrderNotCreated.class)
+    public final ResponseEntity<Object> orderNotCreated(OrderNotCreated ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
+                request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OrderNotFound.class)
+    public final ResponseEntity<Object> orderNotFound(OrderNotFound ex, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(),
                 request.getDescription(false), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);

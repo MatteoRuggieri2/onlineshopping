@@ -1,6 +1,6 @@
 package com.mr.onlineshopping.dto;
 
-import com.mr.onlineshopping.entity.Article;
+import com.mr.onlineshopping.entity.OrderArticle;
 import com.mr.onlineshopping.entity.User;
 import com.mr.onlineshopping.enums.OrderStatus;
 import com.mr.onlineshopping.enums.PaymentType;
@@ -11,8 +11,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,6 +24,9 @@ public class OrderDTO {
     private OrderStatus state;
     private LocalDate orderDate;
     private LocalTime orderTime;
-    private User user;
-    private Set<Article> articles = new HashSet<>();
+    private UserDTO user; // In questo modo non vedo la password
+//    private Set<Article> articles;
+
+//  TODO: Per la relazione one to many con la tabella ponte
+    private List<OrderArticleDTO> orderArticles;   // -> Questo crea l'errore
 }

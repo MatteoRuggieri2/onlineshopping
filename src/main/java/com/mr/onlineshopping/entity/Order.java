@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -55,5 +56,9 @@ public class Order implements Serializable {
             joinColumns = @JoinColumn(name="order_id"), // Prende gli Order che hanno come ID la FK "order_id"
             inverseJoinColumns = @JoinColumn(name="article_id") // Prende gli Article che hanno come ID la FK "article_id"
     )
-    private Set<Article> articles = new HashSet<>();
+    private List<Article> articles;
+
+    //TODO: Per la relazione one to meny con la tabella ponte
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderArticle> orderArticles;
 }

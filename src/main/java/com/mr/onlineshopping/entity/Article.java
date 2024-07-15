@@ -54,4 +54,8 @@ public class Article implements Serializable {
     //TODO: Per la relazione one to meny con la tabella ponte
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CartArticle> cartArticles;
+
+    //TODO: Per la relazione one to meny con la tabella ponte
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderArticle> orderArticles;
 }
